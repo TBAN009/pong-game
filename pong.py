@@ -7,9 +7,9 @@ import random
 pygame.init()
 
 # Screen dimensions
-SCREEN_WIDTH = 1200
-SCREEN_HEIGHT = 600
-FPS = 60
+SCREEN_WIDTH = 1580
+SCREEN_HEIGHT = 900
+FPS = 90
 
 # Colors
 BLACK = (0, 0, 0)
@@ -22,7 +22,7 @@ PADDLE_HEIGHT = 100
 PADDLE_SPEED = 6
 
 # Ball dimensions
-BALL_SIZE = 10
+BALL_SIZE = 20
 BALL_SPEED = 5
 
 # Game setup
