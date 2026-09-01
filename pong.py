@@ -9,7 +9,7 @@ pygame.init()
 # Screen dimensions
 SCREEN_WIDTH = 1580
 SCREEN_HEIGHT = 900
-FPS = 90
+FPS = 120
 
 # Colors
 BLACK = (0, 0, 0)
@@ -22,8 +22,8 @@ PADDLE_HEIGHT = 100
 PADDLE_SPEED = 6
 
 # Ball dimensions
-BALL_SIZE = 20
-BALL_SPEED = 5
+BALL_SIZE = 30
+BALL_SPEED = 6
 
 # Game setup
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -56,7 +56,7 @@ class Paddle:
 
 class Ball:
     def __init__(self):
-        self.rect = pygame.Rect(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, BALL_SIZE, BALL_SIZE)
+        self.rect= pygame.Rect(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, BALL_SIZE, BALL_SIZE)
         self.velocity_x = BALL_SPEED * random.choice([-1, 1])
         self.velocity_y = BALL_SPEED * random.choice([-1, 1])
 
