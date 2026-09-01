@@ -12,6 +12,10 @@ SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 600
 FPS = 60
 
+# Playable pitch bounds (top and bottom)
+FIELD_TOP = 150
+FIELD_BOTTOM = SCREEN_HEIGHT - 20
+
 # Colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -65,29 +69,37 @@ def save_highscore(score):
 
 
 class Paddle:
-    def __init__(self, x, y):
+    def __init__(self, x, y, color=WHITE, stripe_color=None):
         self.rect = pygame.Rect(x, y, PADDLE_WIDTH, PADDLE_HEIGHT)
         self.speed = PADDLE_SPEED
+        self.color = color
+        # stripe color default to a contrasting color
+        self.stripe_color = stripe_color if stripe_color is not None else (255 - color[0], 255 - color[1], 255 - color[2])
 
     def draw(self, surface):
-        pygame.draw.rect(surface, WHITE, self.rect)
+        # Draw paddle with a main color and a colorful stripe to look more realistic
+        pygame.draw.rect(surface, self.color, self.rect)
+        # Draw a central vertical stripe
+        stripe_rect = pygame.Rect(self.rect.x + 3, self.rect.y + 10, max(4, self.rect.width - 6), self.rect.height - 20)
+        pygame.draw.rect(surface, self.stripe_color, stripe_rect)
 
     def move_up(self):
-        if self.rect.top > 0:
+        if self.rect.top > FIELD_TOP:
             self.rect.y -= self.speed
 
     def move_down(self):
-        if self.rect.bottom < SCREEN_HEIGHT:
+        if self.rect.bottom < FIELD_BOTTOM:
             self.rect.y += self.speed
 
     def set_position(self, y):
-        """Set paddle position with boundaries"""
-        self.rect.y = max(0, min(y, SCREEN_HEIGHT - PADDLE_HEIGHT))
+        """Set paddle position constrained inside the pitch (FIELD_TOP..FIELD_BOTTOM)"""
+        self.rect.y = max(FIELD_TOP, min(y, FIELD_BOTTOM - PADDLE_HEIGHT))
 
 
 class Ball:
     def __init__(self):
-        self.rect = pygame.Rect(SCREEN_WIDTH // 2 - BALL_RADIUS, SCREEN_HEIGHT // 2 - BALL_RADIUS, BALL_SIZE, BALL_SIZE)
+        center_y = (FIELD_TOP + FIELD_BOTTOM) // 2
+        self.rect = pygame.Rect(SCREEN_WIDTH // 2 - BALL_RADIUS, center_y - BALL_RADIUS, BALL_SIZE, BALL_SIZE)
         self.velocity_x = BALL_SPEED * random.choice([-1, 1])
         self.velocity_y = BALL_SPEED * random.choice([-1, 1])
 
@@ -100,15 +112,15 @@ class Ball:
         self.rect.x += int(self.velocity_x)
         self.rect.y += int(self.velocity_y)
 
-        # Bounce off top and bottom walls
-        if self.rect.top <= 0 or self.rect.bottom >= SCREEN_HEIGHT:
+        # Bounce off pitch top and bottom
+        if self.rect.top <= FIELD_TOP or self.rect.bottom >= FIELD_BOTTOM:
             self.velocity_y *= -1
-            self.rect.y = max(0, min(self.rect.y, SCREEN_HEIGHT - BALL_SIZE))
+            self.rect.y = max(FIELD_TOP, min(self.rect.y, FIELD_BOTTOM - BALL_SIZE))
 
     def reset(self):
-        """Reset ball to center"""
+        """Reset ball to center of the pitch"""
         self.rect.centerx = SCREEN_WIDTH // 2
-        self.rect.centery = SCREEN_HEIGHT // 2
+        self.rect.centery = (FIELD_TOP + FIELD_BOTTOM) // 2
         # Give the ball an initial X direction away from last scorer at random
         self.velocity_x = BALL_SPEED * random.choice([-1, 1])
         # small random Y
@@ -138,39 +150,38 @@ class Ball:
 
 
 def draw_stadium(surface):
-    """Draw a stylized stadium background: crowd stands, field, lights"""
+    """Draw a stylized stadium background: smaller stands, bigger pitch"""
     # Sky / top background
     surface.fill((30, 35, 45))
 
-    # Draw stands (left and right)
-    stand_height = 140
-    for i in range(6):
-        y = 40 + i * (stand_height // 6)
+    # Smaller stands (left and right)
+    stand_height = 80
+    stand_top = 40
+    for i in range(4):
+        y = stand_top + i * (stand_height // 4)
         color = (40 + i * 6, 40 + i * 6, 60 + i * 8)
-        pygame.draw.rect(surface, color, (0, y, SCREEN_WIDTH, stand_height // 6))
+        pygame.draw.rect(surface, color, (0, y, SCREEN_WIDTH, stand_height // 4))
 
-    # Crowd as small rectangles in gradient
-    rows = 6
+    # Crowd as small rectangles in gradient (reduced size)
+    rows = 4
     cols = 60
-    start_y = 50
-    row_height = 18
+    start_y = stand_top + 6
+    row_height = 16
     for r in range(rows):
         for c in range(cols):
             x = int(c * (SCREEN_WIDTH / cols))
             y = start_y + r * row_height
-            # randomize a bit for color
             shade = 60 + (r * 20) + (c % 3) * 10
-            pygame.draw.rect(surface, (shade, shade - 20, shade + 10), (x, y, int(SCREEN_WIDTH / cols) - 2, row_height - 4))
+            pygame.draw.rect(surface, (shade, max(0, shade - 20), min(255, shade + 10)), (x, y, int(SCREEN_WIDTH / cols) - 2, row_height - 4))
 
-    # Field
-    field_y = 220
-    pygame.draw.rect(surface, DARK_GREEN, (0, field_y, SCREEN_WIDTH, SCREEN_HEIGHT - field_y))
-    pygame.draw.rect(surface, GREEN, (60, field_y + 20, SCREEN_WIDTH - 120, SCREEN_HEIGHT - field_y - 40))
+    # Field (bigger pitch)
+    pygame.draw.rect(surface, DARK_GREEN, (0, FIELD_TOP, SCREEN_WIDTH, FIELD_BOTTOM - FIELD_TOP))
+    pygame.draw.rect(surface, GREEN, (60, FIELD_TOP + 20, SCREEN_WIDTH - 120, FIELD_BOTTOM - FIELD_TOP - 40))
 
     # Field markings
     center_x = SCREEN_WIDTH // 2
-    pygame.draw.line(surface, WHITE, (center_x, field_y + 20), (center_x, SCREEN_HEIGHT - 20), 4)
-    pygame.draw.circle(surface, WHITE, (center_x, (field_y + SCREEN_HEIGHT) // 2), 60, 4)
+    pygame.draw.line(surface, WHITE, (center_x, FIELD_TOP + 20), (center_x, FIELD_BOTTOM - 20), 4)
+    pygame.draw.circle(surface, WHITE, (center_x, (FIELD_TOP + FIELD_BOTTOM) // 2), 60, 4)
 
     # Flood lights
     light_positions = [(80, 40), (SCREEN_WIDTH - 80, 40), (SCREEN_WIDTH // 2, 20)]
@@ -182,8 +193,11 @@ def draw_stadium(surface):
 
 class Game:
     def __init__(self):
-        self.player_paddle = Paddle(20, SCREEN_HEIGHT // 2 - PADDLE_HEIGHT // 2)
-        self.computer_paddle = Paddle(SCREEN_WIDTH - PADDLE_WIDTH - 20, SCREEN_HEIGHT // 2 - PADDLE_HEIGHT // 2)
+        player_start_y = (FIELD_TOP + FIELD_BOTTOM) // 2 - PADDLE_HEIGHT // 2
+        computer_start_y = player_start_y
+        # More realistic/colorful paddles: wooden look with team stripe
+        self.player_paddle = Paddle(20, player_start_y, color=(200, 160, 100), stripe_color=(30, 144, 255))
+        self.computer_paddle = Paddle(SCREEN_WIDTH - PADDLE_WIDTH - 20, computer_start_y, color=(180, 100, 120), stripe_color=(220, 20, 60))
         self.ball = Ball()
         self.player_score = 0
         self.computer_score = 0
@@ -197,7 +211,7 @@ class Game:
         keys = pygame.key.get_pressed()
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
-        # Mouse control for left paddle
+        # Mouse control for left paddle (constrained to pitch)
         self.player_paddle.set_position(mouse_y - PADDLE_HEIGHT // 2)
 
         # Arrow key control (alternative)
@@ -210,16 +224,16 @@ class Game:
         """Update computer paddle AI"""
         paddle_center = self.computer_paddle.rect.centery
         ball_center = self.ball.rect.centery
-        ai_speed = PADDLE_SPEED * 0.75  # Slightly slower than player
+        ai_speed = int(PADDLE_SPEED * 0.75)  # Slightly slower than player
 
-        # AI tries to follow the ball
+        # AI tries to follow the ball but only inside the pitch
         if paddle_center < ball_center - 35:
             self.computer_paddle.rect.y += ai_speed
         elif paddle_center > ball_center + 35:
             self.computer_paddle.rect.y -= ai_speed
 
-        # Keep paddle in bounds
-        self.computer_paddle.rect.y = max(0, min(self.computer_paddle.rect.y, SCREEN_HEIGHT - PADDLE_HEIGHT))
+        # Keep paddle in pitch bounds
+        self.computer_paddle.rect.y = max(FIELD_TOP, min(self.computer_paddle.rect.y, FIELD_BOTTOM - PADDLE_HEIGHT))
 
     def restart(self):
         self.player_score = 0
@@ -240,7 +254,7 @@ class Game:
         self.ball.check_paddle_collision(self.player_paddle)
         self.ball.check_paddle_collision(self.computer_paddle)
 
-        # Check if ball is out of bounds
+        # Check if ball is out of bounds (left/right)
         if self.ball.rect.left < 0:
             # Computer scored against player -> lose a life
             self.computer_score += 1
@@ -304,8 +318,8 @@ class Game:
         """Draw all game elements"""
         draw_stadium(screen)
 
-        # Draw center dashed line over the field area
-        for y in range(240, SCREEN_HEIGHT - 20, 20):
+        # Draw center dashed line over the pitch area
+        for y in range(FIELD_TOP + 20, FIELD_BOTTOM - 20, 20):
             pygame.draw.line(screen, WHITE, (SCREEN_WIDTH // 2, y), (SCREEN_WIDTH // 2, y + 10), 2)
 
         # Draw paddles and ball
