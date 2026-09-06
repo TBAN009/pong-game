@@ -49,6 +49,13 @@ font_score = pygame.font.Font(None, 74)
 font_info = pygame.font.Font(None, 36)
 font_big = pygame.font.Font(None, 96)
 
+# Load and set icon
+try:
+    icon = pygame.image.load("pong_icon.png")
+    pygame.display.set_icon(icon)
+except:
+    pass  # If icon doesn't exist, continue without it
+
 
 def load_highscore():
     try:
@@ -205,6 +212,7 @@ class Game:
         self.player_lives = MAX_LIVES
         self.paused = False
         self.game_over = False
+        self.start_screen = True
 
     def handle_input(self):
         """Handle player input"""
@@ -242,10 +250,11 @@ class Game:
         self.ball.reset()
         self.game_over = False
         self.paused = False
+        self.start_screen = False
 
     def update(self):
         """Update game state"""
-        if self.paused or self.game_over:
+        if self.paused or self.game_over or self.start_screen:
             return
 
         self.ball.update()
@@ -292,27 +301,59 @@ class Game:
         hs_text = font_info.render(f"Highscore: {self.highscore}", True, WHITE)
         screen.blit(hs_text, (SCREEN_WIDTH - 220, SCREEN_HEIGHT - 40))
 
+    def draw_start_menu(self):
+        """Draw the game start menu"""
+        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        overlay.fill((20, 20, 30))
+        screen.blit(overlay, (0, 0))
+
+        title_text = font_big.render("PONG", True, WHITE)
+        subtitle_text = font_score.render("Stadium Edition", True, WHITE)
+        start_text = font_info.render("Press SPACE to Start", True, WHITE)
+        controls_text = font_info.render("Use Mouse or Arrow Keys to Control Your Paddle", True, WHITE)
+        pause_text = font_info.render("Press SPACE to Pause During Game", True, WHITE)
+        quit_text = font_info.render("Press Q to Quit Anytime", True, WHITE)
+
+        screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, SCREEN_HEIGHT // 2 - 150))
+        screen.blit(subtitle_text, (SCREEN_WIDTH // 2 - subtitle_text.get_width() // 2, SCREEN_HEIGHT // 2 - 50))
+        screen.blit(start_text, (SCREEN_WIDTH // 2 - start_text.get_width() // 2, SCREEN_HEIGHT // 2 + 50))
+        screen.blit(controls_text, (SCREEN_WIDTH // 2 - controls_text.get_width() // 2, SCREEN_HEIGHT // 2 + 120))
+        screen.blit(pause_text, (SCREEN_WIDTH // 2 - pause_text.get_width() // 2, SCREEN_HEIGHT // 2 + 170))
+        screen.blit(quit_text, (SCREEN_WIDTH // 2 - quit_text.get_width() // 2, SCREEN_HEIGHT // 2 + 220))
+
     def draw_pause_menu(self):
+        """Draw the pause menu"""
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 160))
         screen.blit(overlay, (0, 0))
 
         pause_text = font_big.render("PAUSED", True, WHITE)
-        press_text = font_info.render("Press Space to Resume | R to Restart | Q to Quit", True, WHITE)
-        screen.blit(pause_text, (SCREEN_WIDTH // 2 - pause_text.get_width() // 2, SCREEN_HEIGHT // 2 - 80))
-        screen.blit(press_text, (SCREEN_WIDTH // 2 - press_text.get_width() // 2, SCREEN_HEIGHT // 2 + 20))
+        resume_text = font_info.render("Press SPACE to Resume", True, WHITE)
+        restart_text = font_info.render("Press R to Restart", True, WHITE)
+        quit_text = font_info.render("Press Q to Quit", True, WHITE)
+
+        screen.blit(pause_text, (SCREEN_WIDTH // 2 - pause_text.get_width() // 2, SCREEN_HEIGHT // 2 - 100))
+        screen.blit(resume_text, (SCREEN_WIDTH // 2 - resume_text.get_width() // 2, SCREEN_HEIGHT // 2 - 10))
+        screen.blit(restart_text, (SCREEN_WIDTH // 2 - restart_text.get_width() // 2, SCREEN_HEIGHT // 2 + 40))
+        screen.blit(quit_text, (SCREEN_WIDTH // 2 - quit_text.get_width() // 2, SCREEN_HEIGHT // 2 + 90))
 
     def draw_game_over(self):
+        """Draw the game over menu"""
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 200))
         screen.blit(overlay, (0, 0))
 
-        lost_text = font_big.render("YOU LOSE", True, WHITE)
-        score_text = font_info.render(f"Score: {self.player_score}  Highscore: {self.highscore}", True, WHITE)
-        press_text = font_info.render("Press R to Restart or Q to Quit", True, WHITE)
-        screen.blit(lost_text, (SCREEN_WIDTH // 2 - lost_text.get_width() // 2, SCREEN_HEIGHT // 2 - 80))
-        screen.blit(score_text, (SCREEN_WIDTH // 2 - score_text.get_width() // 2, SCREEN_HEIGHT // 2 + 10))
-        screen.blit(press_text, (SCREEN_WIDTH // 2 - press_text.get_width() // 2, SCREEN_HEIGHT // 2 + 50))
+        lost_text = font_big.render("GAME OVER", True, WHITE)
+        score_text = font_info.render(f"Final Score: {self.player_score}", True, WHITE)
+        highscore_text = font_info.render(f"Highscore: {self.highscore}", True, WHITE)
+        restart_text = font_info.render("Press R to Restart", True, WHITE)
+        quit_text = font_info.render("Press Q to Quit", True, WHITE)
+
+        screen.blit(lost_text, (SCREEN_WIDTH // 2 - lost_text.get_width() // 2, SCREEN_HEIGHT // 2 - 100))
+        screen.blit(score_text, (SCREEN_WIDTH // 2 - score_text.get_width() // 2, SCREEN_HEIGHT // 2 - 10))
+        screen.blit(highscore_text, (SCREEN_WIDTH // 2 - highscore_text.get_width() // 2, SCREEN_HEIGHT // 2 + 30))
+        screen.blit(restart_text, (SCREEN_WIDTH // 2 - restart_text.get_width() // 2, SCREEN_HEIGHT // 2 + 100))
+        screen.blit(quit_text, (SCREEN_WIDTH // 2 - quit_text.get_width() // 2, SCREEN_HEIGHT // 2 + 150))
 
     def draw(self):
         """Draw all game elements"""
@@ -330,14 +371,11 @@ class Game:
         # HUD
         self.draw_hud()
 
-        # Controls info
-        info_text = font_info.render("Mouse or Arrow Keys to Control Left Paddle | Space: Pause", True, WHITE)
-        screen.blit(info_text, (SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT - 70))
-
-        if self.paused:
+        if self.start_screen:
+            self.draw_start_menu()
+        elif self.paused:
             self.draw_pause_menu()
-
-        if self.game_over:
+        elif self.game_over:
             self.draw_game_over()
 
         pygame.display.flip()
@@ -351,20 +389,23 @@ class Game:
                     running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
-                        # Toggle pause unless game_over
-                        if not self.game_over:
+                        if self.start_screen:
+                            self.restart()
+                        elif not self.game_over:
+                            # Toggle pause only if game is running
                             self.paused = not self.paused
                     elif event.key == pygame.K_r:
                         self.restart()
                     elif event.key == pygame.K_q:
                         running = False
 
-            if not self.paused and not self.game_over:
+            if not self.paused and not self.game_over and not self.start_screen:
                 self.handle_input()
                 self.update()
             else:
-                # Even when paused/game_over, allow mouse to move paddle in the menu for nicer effect
-                self.handle_input()
+                # Even when paused/menu, allow mouse to move paddle for nicer effect
+                if not self.start_screen:
+                    self.handle_input()
 
             self.draw()
             clock.tick(FPS)
