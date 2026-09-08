@@ -8,9 +8,9 @@ import os
 pygame.init()
 
 # Screen dimensions
-SCREEN_WIDTH = 1200
-SCREEN_HEIGHT = 600
-FPS = 60
+SCREEN_WIDTH = 1555
+SCREEN_HEIGHT = 800
+FPS = 120
 
 # Playable pitch bounds (top and bottom)
 FIELD_TOP = 150
@@ -31,8 +31,8 @@ PADDLE_HEIGHT = 100
 PADDLE_SPEED = 6
 
 # Ball dimensions
-BALL_SIZE = 14  # used as diameter for drawing circle
-BALL_SPEED = 5
+BALL_SIZE = 20  # used as diameter for drawing circle
+BALL_SPEED = 7
 BALL_RADIUS = BALL_SIZE // 2
 
 # Lives
