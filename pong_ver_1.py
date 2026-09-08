@@ -7,8 +7,8 @@ import random
 pygame.init()
 
 # Screen dimensions
-SCREEN_WIDTH = 1200
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 1555
+SCREEN_HEIGHT = 800
 FPS = 60
 
 # Colors
