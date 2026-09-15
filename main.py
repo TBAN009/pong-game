@@ -37,10 +37,6 @@ BALL_RADIUS = BALL_SIZE // 2
 
 # Lives
 MAX_LIVES = 5
-
-# Files
-HIGHSCORE_FILE = "highscore.txt"
-
 # Game setup
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Pong Game - Stadium Edition")
